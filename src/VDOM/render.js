@@ -10,14 +10,19 @@ export default function render(vnode){
 
     // 가상 DOM의 속성을 Object.entries를 통해 [key, value]로 받아 html 요소에 할당
     for (const [k, v] of Object.entries(vnode.props)) {
-        el.setAttributes(k, v)
+        if (k.startsWith('on')) {
+            const eventName = k.slice(2).toLowerCase(); // onClick → click
+            domNode.addEventListener(eventName, v);
+        } else {
+            domNode.setAttribute(k, v);
+        }
     }
 
     //가상 DOM의 자식 요소들을 재귀함수를 통해 html요소로 만들어 현재 요소에 할당
     for (const child of vnode.children) {
-       el.appendChild(render(child))
+       domNode.appendChild(render(child))
     }
 
-    return el;
+    return domNode;
 
 }

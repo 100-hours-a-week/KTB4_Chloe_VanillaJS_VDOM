@@ -1,4 +1,4 @@
-function createElement(type, props, ...children) {
+ function createElement(type, props, ...children) {
     return {
         // 태그
         type,
@@ -9,6 +9,8 @@ function createElement(type, props, ...children) {
         //자식 요소
         children: children
             .flat(Infinity)                         
-            .filter(child => child != null && child !== false && child !== true && chile!=undefined) 
+            .filter(child => child != null && child !== false && child !== true && child!=undefined) 
     }
 }
+
+export default createElement;
