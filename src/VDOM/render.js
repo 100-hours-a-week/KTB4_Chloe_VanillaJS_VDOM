@@ -2,6 +2,7 @@ export default function render(vnode){
 
     //그냥 텍스트거나 숫자면 바로 텍스트 노드로 반환
     if (typeof vnode === 'string' || typeof vnode === 'number') {
+        
         return document.createTextNode(vnode);
     }
 
@@ -10,6 +11,8 @@ export default function render(vnode){
 
     // 가상 DOM의 속성을 Object.entries를 통해 [key, value]로 받아 html 요소에 할당
     for (const [k, v] of Object.entries(vnode.props)) {
+        if (k === 'key') continue; // key는 실제 DOM 속성으로 안 나감
+
         if (k.startsWith('on')) {
             const eventName = k.slice(2).toLowerCase(); // onClick → click
             domNode.addEventListener(eventName, v);

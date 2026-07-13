@@ -12,5 +12,5 @@ const vdom = createElement('div', { className: 'container' },
 
 const root = document.getElementById('root');
 mount(root,vdom);
-console.log(root.domNode)
-console.log(root.preVnode)
+console.log(root._domNode)
+console.log(root._preVnode)

@@ -4,9 +4,10 @@ function mount(container,vnode){
     container.appendChild(domNode);  // 2. 화면에 붙임
 
     // 이전 값 저장 (diff를 위해)
-    container.preVnode = vnode;
+    container._preVnode = vnode;
+    
     // 어떤 실제 DOM 수정해야하는지 (patch를 위해)
-    container.domNode = domNode;
+    container._domNode = domNode;
 }
 
 export default mount;
