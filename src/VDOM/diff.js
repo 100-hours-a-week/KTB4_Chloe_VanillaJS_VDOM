@@ -79,12 +79,21 @@ function diffChildren(oldChildVnode,newChildVnode){
     // 1. oldChildren을 key 기준으로 빠르게 찾을 수 있게 Map 생성
     const oldMap = new Map();
     oldChildren.forEach((child, i) => {
-        oldMap.set(child.props.key, { vnode: child, index: i });
+        //key를 가져오거나(동적리스트) & index를 key로 사용(정적리스트)
+        const key = child.props.key ?? i;
+
+        //key값으로 쉽게 자식 요소 쉽게 찾기 위해서 map 구조로 변환
+        oldMap.set(key, { vnode: child, index: i });
     });
 
     // 2. newChildren을 순회하며 CREATE / UPDATE(+MOVE) 판단
     newChildren.forEach((newChild, newIndex) => {
-        const old = oldMap.get(newChild.props.key);
+        const key = newChild.props.key ?? newIndex;
+
+        //new의 key값에 대응하는 객체가 old에도 있는지 확인 (조회해서 꺼냄) 
+        //만약에 없으면 그 객체는 새로 생긴 애
+        //있으면 속성&자식 비교 (재귀)
+        const old = oldMap.get(key);
 
         if (!old) {
         // old에 없던 key → 새로 생김
@@ -92,17 +101,21 @@ function diffChildren(oldChildVnode,newChildVnode){
         } else {
         // old에 있던 key → 내용 비교(재귀 diff)
         const contentPatch = diff(old.vnode, newChild);
+
+        //만약에 old의 index 값이랑, new의 index값이 같아 -> 그러면 위치 변경이 없는거
+        // 근데 index가 다르면 위치 변경을 한거 
         const moved = old.index !== newIndex;
 
         patches.push({
             type: 'UPDATE',
             contentPatch,      // 내부 props/children 변경사항
             moved,             // 위치가 바뀌었는지
+            //old의 index에서 new의 index로 위치 변경
             fromIndex: old.index,
             toIndex: newIndex
         });
 
-        oldMap.delete(newChild.props.key); // 매칭 완료 → 삭제 대상에서 제외
+        oldMap.delete(key); // 매칭 완료 → 삭제 대상에서 제외
         }
     });
 
