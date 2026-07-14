@@ -1,6 +1,6 @@
 import render from './render.js'
 
-function diff(oldVnode,newVnode){
+export default function diff(oldVnode,newVnode){
     //노드가 삭제된 경우
     if(!newVnode){
         return { 
@@ -20,7 +20,7 @@ function diff(oldVnode,newVnode){
     if (oldVnode.type !== newVnode.type) {
         return { 
             type: 'REPLACE', 
-            newVNode 
+            newVnode 
         };
     }
 
@@ -30,10 +30,10 @@ function diff(oldVnode,newVnode){
     if (typeof newVnode === 'string' || typeof newVnode === 'number') {
     
         //객체가 아니라서 그냥 값 비교! -> 내부 속성 비교
-        if (oldVNode !== newVNode) {
+        if (oldVnode !== newVnode) {
             return { 
                 type: 'TEXT', 
-                newVNode 
+                newVnode 
             };
         }
             return null; // 값도 같으면 변경 없음
@@ -42,8 +42,8 @@ function diff(oldVnode,newVnode){
     
     return {
         type: 'UPDATE',
-        propsPatches: diffProps(oldVNode.props, newVNode.props),
-        childrenPatches: diffChildren(oldVNode.children, newVNode.children)
+        propsPatches: diffProps(oldVnode.props, newVnode.props),
+        childrenPatches: diffChildren(oldVnode.children, newVnode.children)
     }
 
 
@@ -78,17 +78,22 @@ function diffChildren(oldChildVnode,newChildVnode){
 
     // 1. oldChildren을 key 기준으로 빠르게 찾을 수 있게 Map 생성
     const oldMap = new Map();
-    oldChildren.forEach((child, i) => {
+    oldChildVnode.forEach((child, i) => {
         //key를 가져오거나(동적리스트) & index를 key로 사용(정적리스트)
-        const key = child.props.key ?? i;
+        // child가 문자열/숫자면 props 자체가 없으므로, key는 무조건 index를 씀
+        const key = (typeof child === 'string' || typeof child === 'number')
+            ? i
+            : (child.props.key ?? i);
 
         //key값으로 쉽게 자식 요소 쉽게 찾기 위해서 map 구조로 변환
         oldMap.set(key, { vnode: child, index: i });
     });
 
     // 2. newChildren을 순회하며 CREATE / UPDATE(+MOVE) 판단
-    newChildren.forEach((newChild, newIndex) => {
-        const key = newChild.props.key ?? newIndex;
+    newChildVnode.forEach((newChild, newIndex) => {
+        const key = (typeof newChild === 'string' || typeof newChild === 'number')
+            ? newIndex
+            : (newChild.props.key ?? newIndex);
 
         //new의 key값에 대응하는 객체가 old에도 있는지 확인 (조회해서 꺼냄) 
         //만약에 없으면 그 객체는 새로 생긴 애

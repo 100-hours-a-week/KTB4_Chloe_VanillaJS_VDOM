@@ -4,7 +4,7 @@ function mount(container,vnode){
     container.appendChild(domNode);  // 2. 화면에 붙임
 
     // 이전 값 저장 (diff를 위해)
-    container._preVnode = vnode;
+    container._prevVnode = vnode;
     
     // 어떤 실제 DOM 수정해야하는지 (patch를 위해)
     container._domNode = domNode;

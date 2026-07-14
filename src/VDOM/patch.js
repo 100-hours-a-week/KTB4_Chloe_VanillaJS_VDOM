@@ -1,4 +1,6 @@
-function patch(domNode,patchObj){
+import render from './render.js'
+
+export default function patch(domNode,patchObj){
 
     if (!patchObj) return; // 변경 없으면 스킵
 
@@ -9,11 +11,11 @@ function patch(domNode,patchObj){
             break;
         //타입이 달라서 기존 노드를 새 노드로 완전 교체
         case 'REPLACE':
-            domNode.replaceWith(render(patchObj.newVNode));
+            domNode.replaceWith(render(patchObj.newVnode));
             break;
         //TEXT라서 값만 변경 (얘는 무조건 말단 노드)
         case 'TEXT':
-            domNode.textContent = patchObj.newVNode;
+            domNode.textContent = patchObj.newVnode;
             break;
         case 'UPDATE':
             patchProps(domNode, patchObj.propsPatches);     // toSet/toRemove 반영
@@ -48,7 +50,7 @@ function patchProps(domNode, { toSet, toRemove }) {
     //이벤트 처리
     if (key.startsWith('on')) {
         const eventName = key.slice(2).toLowerCase();
-        
+
         if (domNode._listeners && domNode._listeners[eventName]) {
             domNode.removeEventListener(eventName, domNode._listeners[eventName]);
             delete domNode._listeners[eventName];
@@ -60,14 +62,22 @@ function patchProps(domNode, { toSet, toRemove }) {
 }
 
 function patchChildren(parentDomNode, childrenPatches) {
-  // 여기서 parentDomNode는 patch()가 이미 갖고 있던 domNode를 그대로 전달받은 것
   childrenPatches.forEach(childPatch => {
     if (childPatch.type === 'CREATE') {
-      parentDomNode.appendChild(render(childPatch.newVNode)); // 여기서 씀
-    } else {
-      
+      parentDomNode.appendChild(render(childPatch.newVNode));
+    } else if (childPatch.type === 'REMOVE') {
       const targetDom = parentDomNode.childNodes[childPatch.fromIndex];
-      patch(targetDom, childPatch); // REMOVE/UPDATE/TEXT는 기존 자식 대상
+      targetDom.remove();
+    } else if (childPatch.type === 'UPDATE') {
+      const targetDom = parentDomNode.childNodes[childPatch.fromIndex];
+
+      // 진짜 diff 결과는 contentPatch 안에 있음 → 이걸 patch()에 넘겨야 함
+      patch(targetDom, childPatch.contentPatch);
+
+      // 위치가 바뀐 경우 실제 DOM도 옮겨줌
+      if (childPatch.moved) {
+        parentDomNode.insertBefore(targetDom, parentDomNode.childNodes[childPatch.toIndex]);
+      }
     }
   });
 }
