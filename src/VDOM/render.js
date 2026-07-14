@@ -16,6 +16,10 @@ export default function render(vnode){
         if (k.startsWith('on')) {
             const eventName = k.slice(2).toLowerCase(); // onClick → click
             domNode.addEventListener(eventName, v);
+
+            // 렌더할 때도 리스너 기억해두기 위해 속성으로 저장
+            domNode._listeners = domNode._listeners || {};
+            domNode._listeners[eventName] = v;
         } else {
             domNode.setAttribute(k, v);
         }
